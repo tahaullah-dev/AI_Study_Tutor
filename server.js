@@ -146,7 +146,7 @@ Provide ONLY the summary, no preamble or extra text.`;
   }
 });
 
-// ENHANCED QUIZ ENDPOINT
+// ENHANCED QUIZ ENDPOINT - FIXED
 app.post("/api/generateQuiz", async (req, res) => {
   try {
     const { 
@@ -199,6 +199,8 @@ Return ONLY this JSON format with NO extra text:
 For TRUE/FALSE questions: options should be ["True", "False"]
 For FILL IN THE BLANK: omit "options" and "correctIndex", provide "correctAnswer" instead
 
+IMPORTANT: Generate the exact number of each question type as specified in the distribution.
+
 Content:
 ${truncatedText}`;
 
@@ -208,27 +210,63 @@ ${truncatedText}`;
     const quiz = await callAI(prompt, maxTokens);
     const quizData = parseQuizResponse(quiz);
 
-    // Validate and format questions
+    // FIXED: Better validation that preserves all question types
     const filtered = quizData
       .filter(q => {
-        if (!q.question) return false;
-        if (q.type === 'fillblank') return q.correctAnswer;
-        return Array.isArray(q.options) && typeof q.correctIndex === 'number';
+        if (!q.question || !q.type) return false;
+        
+        // Validate based on question type
+        if (q.type === 'fillblank') {
+          return q.correctAnswer && typeof q.correctAnswer === 'string';
+        } else if (q.type === 'truefalse') {
+          // Ensure true/false questions have proper options
+          if (!Array.isArray(q.options) || q.options.length !== 2) {
+            q.options = ["True", "False"];
+          }
+          return typeof q.correctIndex === 'number' && q.correctIndex >= 0 && q.correctIndex <= 1;
+        } else if (q.type === 'mcq') {
+          return Array.isArray(q.options) && q.options.length >= 2 && 
+                 typeof q.correctIndex === 'number' && 
+                 q.correctIndex >= 0 && q.correctIndex < q.options.length;
+        }
+        
+        return false;
       })
       .slice(0, requestedCount)
-      .map(q => ({
-        type: q.type || 'mcq',
-        question: q.question.trim(),
-        options: q.options?.map(opt => String(opt).trim()),
-        correctIndex: q.correctIndex,
-        correctAnswer: q.correctAnswer?.trim(),
-        hint: q.hint || "Think about the key concepts from the material.",
-        explanation: q.explanation || "Review this topic for better understanding."
-      }));
+      .map(q => {
+        // Ensure proper formatting for each question type
+        const baseQuestion = {
+          type: q.type,
+          question: q.question.trim(),
+          hint: q.hint || "Think about the key concepts from the material.",
+          explanation: q.explanation || "Review this topic for better understanding."
+        };
+
+        if (q.type === 'fillblank') {
+          return {
+            ...baseQuestion,
+            correctAnswer: q.correctAnswer.trim()
+          };
+        } else {
+          // For MCQ and True/False
+          return {
+            ...baseQuestion,
+            options: (q.options || []).map(opt => String(opt).trim()),
+            correctIndex: q.correctIndex
+          };
+        }
+      });
 
     if (filtered.length === 0) {
       throw new Error("No valid questions generated");
     }
+
+    // Log the distribution for debugging
+    const typeCounts = {};
+    filtered.forEach(q => {
+      typeCounts[q.type] = (typeCounts[q.type] || 0) + 1;
+    });
+    console.log("Generated question distribution:", typeCounts);
 
     res.json({ questions: filtered });
 
