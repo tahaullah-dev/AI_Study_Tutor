@@ -1,7 +1,7 @@
 // Enhanced main.js with all new features
 const API_BASE = window.location.hostname === "localhost"
   ? "http://localhost:3000"
-  : "https://ai-study-tutor-awpw.onrender.com";
+  : "https://ai-study-tutor-chq8.onrender.com";
 
 // State management
 let currentQuizData = null;
