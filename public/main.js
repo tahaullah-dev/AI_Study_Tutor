@@ -2,7 +2,7 @@
 
 const API_BASE = window.location.hostname === "localhost"
     ? "http://localhost:3000"
-    : "https://ai-study-tutor-1-wy8h.onrender.com";
+    : "https://ai-study-tutor-1-3dt7.onrender.com";
 
 // (all other variables the same...)
 
