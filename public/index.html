@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Study Tutor - Enhanced</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <button id="themeToggle" class="neumo-btn theme-toggle">🌙</button>
+  
+  <div class="container">
+    <header class="app-header">
+      <h1>📘 AI Study Tutor</h1>
+      <p class="tagline">Your intelligent learning companion</p>
+    </header>
+
+    <!-- Main Content Area -->
+    <div class="content-input-section neumo-card">
+      <label for="contentInput" class="section-label">📝 Study Material</label>
+      <textarea id="contentInput" placeholder="Paste your study material here..."></textarea>
+    </div>
+
+    <!-- Action Tabs -->
+    <div class="action-tabs">
+      <button class="tab-btn active" data-tab="summary">📄 Summary</button>
+      <button class="tab-btn" data-tab="quiz">🧠 Quiz</button>
+      <button class="tab-btn" data-tab="quickfire">⚡ Quick Fire</button>
+    </div>
+
+    <!-- Summary Section -->
+    <div id="summaryTab" class="tab-content active">
+      <div class="neumo-card controls-card">
+        <h3 class="section-title">Summary Options</h3>
+        
+        <div class="control-row">
+          <div class="control-group">
+            <label for="summaryLength">Length:</label>
+            <select id="summaryLength" class="neumo-select">
+              <option value="short">Short</option>
+              <option value="medium" selected>Medium</option>
+              <option value="long">Long</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label for="summaryFormat">Format:</label>
+            <select id="summaryFormat" class="neumo-select">
+              <option value="paragraph" selected>Paragraph</option>
+              <option value="points">Bullet Points</option>
+              <option value="headings">Headings & Subheadings</option>
+              <option value="mixed">Mixed (All)</option>
+            </select>
+          </div>
+        </div>
+
+        <button id="summarizeBtn" class="neumo-btn primary full-width">🔍 Generate Summary</button>
+      </div>
+
+      <div id="summarySection" class="neumo-card result-card hidden">
+        <div class="result-header">
+          <h3>📄 Your Summary</h3>
+          <div class="action-buttons">
+            <button id="regenerateSummary" class="neumo-btn icon-btn" title="Regenerate">🔄</button>
+            <button id="copySummary" class="neumo-btn icon-btn" title="Copy">📋</button>
+            <button id="exportSummaryPDF" class="neumo-btn icon-btn" title="Export PDF">📥</button>
+          </div>
+        </div>
+        <div id="summaryDisplay" class="result-content"></div>
+      </div>
+    </div>
+
+    <!-- Quiz Section -->
+    <div id="quizTab" class="tab-content">
+      <div class="neumo-card controls-card">
+        <h3 class="section-title">Quiz Options</h3>
+        
+        <div class="control-row">
+          <div class="control-group">
+            <label for="quizDifficulty">Difficulty:</label>
+            <select id="quizDifficulty" class="neumo-select">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label for="questionCount">Questions:</label>
+            <select id="questionCount" class="neumo-select">
+              <option value="10" selected>10</option>
+              <option value="20">20</option>
+              <option value="30">30</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="control-row">
+          <div class="control-group full-width">
+            <label>Question Types:</label>
+            <div class="checkbox-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="quizTypeMCQ" value="mcq" checked />
+                <span>Multiple Choice</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="quizTypeFillBlank" value="fillblank" checked />
+                <span>Fill in the Blank</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="quizTypeTrueFalse" value="truefalse" checked />
+                <span>True/False</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <button id="quizBtn" class="neumo-btn primary full-width">🧠 Generate Quiz</button>
+      </div>
+      
+      <div id="quizSection" class="neumo-card result-card hidden">
+        <div class="result-header">
+          <h3>🧠 Quiz Time</h3>
+          <div class="quiz-progress" id="quizProgress"></div>
+        </div>
+        <div id="quizContainer"></div>
+        <div id="quizActions" class="hidden">
+          <button id="submitQuiz" class="neumo-btn primary">✅ Submit Answers</button>
+        </div>
+      </div>
+
+      <div id="quizResultSection" class="neumo-card result-card hidden">
+        <div class="result-header">
+          <h3>🎯 Quiz Results</h3>
+          <div class="action-buttons">
+            <button id="retryQuiz" class="neumo-btn icon-btn" title="Retry">🔄</button>
+            <button id="exportQuizPDF" class="neumo-btn icon-btn" title="Export PDF">📥</button>
+          </div>
+        </div>
+        <div id="quizResult"></div>
+        <div id="quizExplanations"></div>
+      </div>
+    </div>
+
+    <!-- Quick Fire Section -->
+    <div id="quickfireTab" class="tab-content">
+      <div class="neumo-card controls-card">
+        <h3 class="section-title">⚡ 1-Minute Quick Fire</h3>
+        <p class="info-text">Answer 5 rapid-fire questions in 60 seconds!</p>
+        <button id="quickfireBtn" class="neumo-btn primary full-width">⚡ Start Quick Fire</button>
+      </div>
+
+      <div id="quickfireSection" class="neumo-card result-card hidden">
+        <div class="result-header">
+          <h3>⚡ Quick Fire Challenge</h3>
+          <div class="timer-display" id="timerDisplay">01:00</div>
+        </div>
+        <div id="quickfireContainer"></div>
+        <div id="quickfireActions" class="hidden">
+          <button id="submitQuickfire" class="neumo-btn primary">✅ Submit</button>
+        </div>
+      </div>
+
+      <div id="quickfireResultSection" class="neumo-card result-card hidden">
+        <div class="result-header">
+          <h3>⚡ Quick Fire Results</h3>
+          <button id="retryQuickfire" class="neumo-btn icon-btn" title="Retry">🔄</button>
+        </div>
+        <div id="quickfireResult"></div>
+      </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading" class="loading-overlay hidden">
+      <div class="loading-spinner"></div>
+      <p>Processing your request...</p>
+    </div>
+  </div>
+  
+  <script src="main.js"></script>
+</body>
+</html>
